@@ -1,15 +1,24 @@
 [submodule "ci-box-lava-worker"]
 	path = ci-box-lava-worker
-	url = https://github.com/ci-box/ci-box-lava-worker
+	url = ssh://rdsw@10.20.30.20/volume1/internal_git/ci-box-lava-worker.git
 [submodule "ci-box-lava-master"]
 	path = ci-box-lava-master
-	url = https://github.com/ci-box/ci-box-lava-master
+	url = ssh://rdsw@10.20.30.20/volume1/internal_git/ci-box-lava-master.git
 [submodule "ci-box-fileserver"]
 	path = ci-box-fileserver
-	url = https://github.com/ci-box/ci-box-fileserver
+	url = ssh://rdsw@10.20.30.20/volume1/internal_git/ci-box-fileserver.git
 [submodule "ci-box-squad"]
 	path = ci-box-squad
-	url = https://github.com/ci-box/ci-box-squad
+	branch = squad-wip
+	url = ssh://rdsw@10.20.30.20/volume1/internal_git/ci-box-squad.git
 [submodule "ci-box-jenkins"]
 	path = ci-box-jenkins
-	url = https://github.com/ci-box/ci-box-jenkins
+	url = ssh://rdsw@10.20.30.20/volume1/internal_git/ci-box-jenkins.git
+[submodule "ci-box-builders"]
+	path = ci-box-builders
+	branch = builder
+	url = ssh://rdsw@10.20.30.20:/volume1/internal_git/docker.git
+[submodule "ci-box-postgres"]
+	path = ci-box-postgres
+	url = ssh://rdsw@10.20.30.20:/volume1/internal_git/docker.git
+	branch = database
