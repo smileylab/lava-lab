@@ -1,0 +1,199 @@
+postgres:
+  version: 9.6
+  dbhost: 10.88.88.93
+  dbport: 5432
+  dbuser: admin
+  dbpassword: password=TN
+  dbname: tn-lavalab
+  ports:
+    - "5432:5432"
+  volumes:
+    - "./overlays/postgresql/data:/var/lib/postgresql/data"
+  environment:
+    TZ: Asia/Taipei   # add timezone env
+  shm_size: 256M
+
+masters:
+  - name: lava-server
+    version: 2019.09
+    # note: sudo for posrgres commands
+    extra_packages: "sudo patch unzip"
+    users:
+    - username: admin
+      password: password=TN
+      superuser: yes
+      staff: yes
+      token: longrandomtokenadmin
+    tokens:
+    - username: admin
+      token: dfjdfkfkdjfkdsjfsl
+      description: no description
+    http_fqdn: 10.88.88.93
+    healthcheck_url: http://10.88.88.93:8085
+    aliases: lava.server
+    # persistent_db: True # this is to enable local postgresql on lava-server
+    ports:
+      - "8080:80"
+      - "5555:5555"
+      - "5556:5556"
+      - "5500:5500"
+    volumes:
+      - "/boot:/boot"
+      - "/lib/modules:/lib/modules"
+    environment:
+      TZ: Asia/Taipei   # add timezone env
+
+slaves:
+  - name: lava-worker
+    version: 2019.09
+    extra_packages: "git"
+    remote_master: lava-server
+    remote_address: 10.88.88.93
+    remote_rpc_port: 8080
+    remote_user: admin
+    dispatcher_ip: 10.88.88.93
+    ports:
+      - "8081:80"
+    volumes:
+      - "/boot:/boot"
+      - "/lib/modules:/lib/modules"
+    environment:
+      TZ: Asia/Taipei   # add timezone env
+
+boards:
+  - name: pico-imx6-pi
+    type: pico-imx6
+    # match to a specified slave (slave's name) from the slaves list
+    slave: lava-worker
+    pdu_generic:
+      hard_reset_command: ssh root@10.88.88.186 "echo 0 > /sys/class/edm/gpio/GPIO_P48/value && echo 1 > /sys/class/edm/gpio/GPIO_P48/value"
+      power_on_command: ssh root@10.88.88.186 "echo 1 > /sys/class/edm/gpio/GPIO_P48/value"
+      power_off_command: ssh root@10.88.88.186 "echo 0 > /sys/class/edm/gpio/GPIO_P48/value"
+    uart:
+      idvendor: 0x0403
+      idproduct: 0x6001
+      serial: AI05JFU2
+  - name: bcm2837-rpi-3-b-0
+    type: bcm2837-rpi-3-b-32
+    # match to a specified slave (slave's name) from the slaves list
+    slave: lava-worker
+    pdu_generic:
+      hard_reset_command: ssh root@10.88.88.186 "echo 0 > /sys/class/edm/gpio/GPIO_P26/value && echo 1 > /sys/class/edm/gpio/GPIO_P26/value"
+      power_on_command: ssh root@10.88.88.186 "echo 1 > /sys/class/edm/gpio/GPIO_P26/value"
+      power_off_command: ssh root@10.88.88.186 "echo 0 > /sys/class/edm/gpio/GPIO_P26/value"
+    uart:
+      idvendor: 0x0403
+      idproduct: 0x6001
+      serial: AL036PUZ
+
+jenkins:
+  version: lts
+  http_port: 8083
+  agent_port: 8084
+  extra_packages: "repo gettext"
+  plugins: "ace-editor ant antisamy-markup-formatter apache-httpcomponents-client-4-api \
+  authentication-tokens bouncycastle-api branch-api build-timeout \
+  cloudbees-folder cloud-stats command-launcher copyartifact credentials credentials-binding \
+  display-url-api docker-commons docker-workflow durable-task \
+  email-ext external-monitor-job ftppublisher \
+  git git-changelog git-client git-parameter github github-api github-branch-source git-server \
+  gradle handlebars icon-shim jackson2-api javadoc jdk-tool jquery-detached jsch junit ldap locale \
+  mailer mapdb-api matrix-auth matrix-project momentjs multiple-scms pam-auth \
+  pipeline-build-step pipeline-github-lib pipeline-graph-analysis pipeline-input-step \
+  pipeline-milestone-step pipeline-model-api pipeline-model-declarative-agent pipeline-model-definition \
+  pipeline-model-extensions pipeline-rest-api pipeline-stage-step pipeline-stage-tags-metadata pipeline-stage-view \
+  plain-credentials publish-over publish-over-ftp publish-over-ssh \
+  repo resource-disposer scm-api script-security ssh-credentials ssh-slaves structs \
+  subversion timestamper token-macro windows-slaves \
+  workflow-aggregator workflow-api workflow-basic-steps workflow-cps workflow-cps-global-lib \
+  workflow-durable-task-step workflow-job workflow-multibranch workflow-scm-step workflow-step-api \
+  workflow-support ws-cleanup yet-another-docker-plugin"
+  ports:
+    - "8083:8083"   # http port
+    - "8084:8084"   # slave/agent port
+  environment:
+    JAVA_OPTS: -Djenkins.install.runSetupWizard=false -Djava.awt.headless=true
+    TZ: Asia/Taipei
+  volumes:
+    - "./ci-box-jenkins/overlays/jenkins_home/:/var/jenkins_home/"
+
+builders:
+  - name: yocto
+    username: jenkins
+    password: jenkins
+    toolchain: "gcc-5.1-2015.08-x86_64_arm-linux-gnueabihf \
+    gcc-linaro-6.4.1-2017.11-x86_64_aarch64-linux-gnu"
+    extra_pkgs: "gawk wget git-core git-lfs diffstat unzip texinfo gcc-multilib \
+    g++-multilib build-essential chrpath socat cpio \
+    python python3 python3-pip python3-pexpect python-dev \
+    xz-utils debianutils iputils-ping python3-git python3-jinja2 \
+    libegl1-mesa libsdl1.2-dev xterm coreutils texi2html file docbook-utils \
+    python-pysqlite2 help2man desktop-file-utils \
+    libgl1-mesa-dev libglu1-mesa-dev mercurial autoconf automake \
+    groff lzop asciidoc u-boot-tools libreoffice-writer \
+    sshpass ssh-askpass zip kpartx repo qemu"
+    sshd_port: 22
+  - name: ubuntu
+    username: jenkins
+    password: jenkins
+    extra_pkgs: "kpartx zip wget git sshpass libreoffice-writer u-boot-tools \
+    dosfstools device-tree-compiler cpio expect zutils"
+  - name: android
+    username: jenkins
+    password: jenkins
+    extra_pkgs: "uuid uuid-dev zlib1g-dev liblz-dev liblzo2-2 liblzo2-dev lzop \
+    git-core curl u-boot-tools mtd-utils android-tools-fsutils \
+    device-tree-compiler gdisk gnupg flex bison gperf build-essential zip curl \
+    zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev \
+    x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc \
+    unzip sshpass ssh-askpass zip kpartx repo vim screen sudo wget bc locales \
+    openjdk-8-jdk rsync python3 kmod cgpt bsdmainutils lzip"
+  - name: kernel
+    username: jenkins
+    password: jenkins
+    toolchain: "gcc-5.1-2015.08-x86_64_arm-linux-gnueabihf \
+    gcc-linaro-6.4.1-2017.11-x86_64_aarch64-linux-gnu"
+    extra_pkgs: "git-core wget zlib1g-dev make gcc bc lzop kmod device-tree-compiler"
+  - name: buildroot
+    username: jenkins
+    password: jenkins
+    toolchain: "gcc-5.1-2015.08-x86_64_arm-linux-gnueabihf \
+    gcc-linaro-6.4.1-2017.11-x86_64_aarch64-linux-gnu"
+    extra_pkgs: "wget git-core unzip file build-essential bc lzop cpio python3 \
+    libc6-i386 lib32stdc++6 lib32z1 ssh-askpass"
+  - name: qcgui
+    username: jenkins
+    password: jenkins
+    toolchain: "angstrom-sysroot \
+    arm-2010.09-50-arm-none-linux-gnueabi-i686-pc-linux-gnu"
+    extra_pkgs: "build-essential libx11-dev libpng-dev git-core"
+    sshd_port: 22
+
+# SQUAD - Software Quality Dashboard
+squad:
+  version: 0.68.3
+  username: admin
+  password: password=TN
+  email: admin@technexion.com
+  token: "2d703e793ea345efdbab52d95fe33ec715bcc2d4"
+  group: "TechNexion"
+  projects: "yocto-sumo"
+  # Lava test execution backend
+  lava_server: 10.88.88.93
+  lava_rpc_port: 8080
+  lava_username: admin
+  lava_token: "dfjdfkfkdjfkdsjfsl"
+  extra_packages: "sudo gettext"
+  ports: # expose http to outside
+    - "8082:80"
+
+# File Server (FTP/HTTP) to store and host artifacts (images, test templates...)
+healthcheck:
+  http_port: 80
+  ftp_port: 21
+  root_path: "/wwwroot"
+  ports: # expose http to outside
+    - "8085:80"
+    - "8086:21"
+  volumes:
+    - ./ci-box-fileserver/overlays:/wwwroot
