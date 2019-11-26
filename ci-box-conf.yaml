@@ -1,6 +1,6 @@
 postgres:
   version: 9.6
-  dbhost: 10.88.88.93
+  dbhost: 10.88.88.12
   dbport: 5432
   dbuser: admin
   dbpassword: password=TN
@@ -23,13 +23,13 @@ masters:
       password: password=TN
       superuser: yes
       staff: yes
-      token: longrandomtokenadmin
+      token: "8bbc1cb6944290dac1d321ce64874d9b5328982a"
     tokens:
     - username: admin
-      token: dfjdfkfkdjfkdsjfsl
-      description: no description
-    http_fqdn: 10.88.88.93
-    healthcheck_url: http://10.88.88.93:8085
+      token: "4015bc9ee91e437d90df83fb64fbbe312d9c9f05"
+      description: Account and Token for ZMQ
+    http_fqdn: 10.88.88.12
+    healthcheck_url: http://10.88.88.12:8085
     aliases: lava.server
     # persistent_db: True # this is to enable local postgresql on lava-server
     ports:
@@ -48,10 +48,10 @@ slaves:
     version: 2019.09
     extra_packages: "git"
     remote_master: lava-server
-    remote_address: 10.88.88.93
+    remote_address: 10.88.88.12
     remote_rpc_port: 8080
     remote_user: admin
-    dispatcher_ip: 10.88.88.93
+    dispatcher_ip: 10.88.88.12
     ports:
       - "8081:80"
     volumes:
@@ -175,14 +175,14 @@ squad:
   username: admin
   password: password=TN
   email: admin@technexion.com
-  token: "2d703e793ea345efdbab52d95fe33ec715bcc2d4"
+  token: "fb5ff1c7e4425a89b61859cab995137eacb133e4"
   group: "TechNexion"
   projects: "yocto-sumo"
   # Lava test execution backend
-  lava_server: 10.88.88.93
+  lava_server: 10.88.88.12
   lava_rpc_port: 8080
   lava_username: admin
-  lava_token: "dfjdfkfkdjfkdsjfsl"
+  lava_token: "4015bc9ee91e437d90df83fb64fbbe312d9c9f05"
   extra_packages: "sudo gettext"
   ports: # expose http to outside
     - "8082:80"
@@ -196,4 +196,4 @@ healthcheck:
     - "8085:80"
     - "8086:21"
   volumes:
-    - ./ci-box-fileserver/overlays:/wwwroot
+    - /mnt/md0/healthcheck:/wwwroot
