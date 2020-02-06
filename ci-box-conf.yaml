@@ -85,6 +85,18 @@ boards:
       idvendor: 0x0403
       idproduct: 0x6001
       serial: AL04I6FR
+  - name: pico-imx7-hobbit
+    type: pico-imx7-ums
+    # match to specified slave (slave's name) from the slaves list
+    slave: lava-worker
+    pdu_generic:
+      hard_reset_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY4/value && echo 1 > /sys/class/edm/gpio/GPIO_RELAY4/value"
+      power_on_command: ssh root@10.88.88.168 "echo 1 > /sys/class/edm/gpio/GPIO_RELAY4/value"
+      power_off_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY4/value"
+    uart:
+      idvendor: 0x0403
+      idproduct: 0x6001
+      serial: AL036SDO
   - name: bcm2837-rpi-3-b-0
     type: bcm2837-rpi-3-b-32
     # match to a specified slave (slave's name) from the slaves list
