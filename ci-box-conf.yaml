@@ -54,6 +54,7 @@ slaves:
     dispatcher_ip: 10.88.88.12
     ports:
       - "8081:80"
+      - "8022:22"
     volumes:
       - "/boot:/boot"
       - "/lib/modules:/lib/modules"
