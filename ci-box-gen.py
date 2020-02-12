@@ -53,6 +53,9 @@ template_device_pdu_generic = string.Template("""
 {% set power_off_command = '${power_off_command}' %}
 {% set power_on_command = '${power_on_command}' %}
 """)
+template_device_ums_generic = string.Template("""
+{% set uboot_mass_storage_device = '${by_id}' %}
+""")
 template_device_ser2net = string.Template("""{% set connection_command = 'telnet 127.0.0.1 ${port}' %}""")
 template_device_screen = string.Template("""{% set connection_command = 'ssh -o StrictHostKeyChecking=no -t root@127.0.0.1 "TERM=xterm screen -x ${board}"' %}""")
 
@@ -714,8 +717,11 @@ def parse_slave(dockcomp, index, slave, masters):
 
     # Bind /dev from host to slave. This is needed when lava-workers tries to
     # access some HID PDU on the host container os.
-    if "bind_dev" in slave and slave["bind_dev"]:
-        dockcomp["services"][name]["volumes"].append("/dev:/dev")
+    if "bind_dev" in slave:
+        if isinstance(slave["bind_dev"], bool) and slave["bind_dev"]:
+            dockcomp["services"][name]["volumes"].append("/dev:/dev")
+        elif isinstance(slave["bind_dev"], str) and len(slave["bind_dev"]) > 0:
+            dockcomp["services"][name]["volumes"].append("{}:{}".format(slave["bind_dev"], slave["bind_dev"]))
         dockcomp["services"][name]["privileged"] = True
 
     # An optional list of actions to do at the end of the docker build
@@ -742,7 +748,7 @@ def parse_slave(dockcomp, index, slave, masters):
                 fudev.write(udev_line)
             # when no bind_dev specified for the container os host,
             # create own dev binding for the container so as to access the device on host
-            if not "bind_dev" in slave or not slave["bind_dev"]:
+            if not ("bind_dev" in slave and isinstance(slave["bind_dev"], bool) and slave["bind_dev"]):
                 dockcomp_add_device(dockcomp, name, "/dev/{}:/dev/{}".format(udev_dev["name"], udev_dev["name"]))
 
     # specify that lava uses a TFTP server
@@ -835,6 +841,9 @@ def parse_board(dockcomp, board, slaves):
                         power_off_command=power_off_command,
                         power_on_command=power_on_command
                     )
+    if "ums" in board:
+        by_id = board["ums"]["by-id"]
+        device_line += template_device_ums_generic.substitute(by_id=by_id)
     use_kvm = board["kvm"] if "kvm" in board else False
     if use_kvm:
         dockcomp_add_device(dockcomp, slave_name, "/dev/kvm:/dev/kvm")
@@ -869,7 +878,7 @@ def parse_board(dockcomp, board, slaves):
         with open("./udev/99-lavaworker-udev.rules", "a") as fp:
             fp.write(udev_line)
         # is slave docker is not bound with host container os's /dev, add devices binding
-        if not "bind_dev" in slave or not slave["bind_dev"]:
+        if not ("bind_dev" in slave and isinstance(slave["bind_dev"], bool) and slave["bind_dev"]):
             dockcomp_add_device(dockcomp, slave_name, "/dev/{}:/dev/{}".format(board_name, board_name))
         # setup serial tool to use over the serial I/F to DUT target
         use_conmux = uart["use_conmux"] if "use_conmux" in uart else False
