@@ -54,7 +54,7 @@ template_device_pdu_generic = string.Template("""
 {% set power_on_command = '${power_on_command}' %}
 """)
 template_device_ums_generic = string.Template("""
-{% set uboot_mass_storage_device = '${by_id}' %}
+{% set uboot_mass_storage_device = '/dev/disk/by-id/${by_id}' %}
 """)
 template_device_ser2net = string.Template("""{% set connection_command = 'telnet 127.0.0.1 ${port}' %}""")
 template_device_screen = string.Template("""{% set connection_command = 'ssh -o StrictHostKeyChecking=no -t root@127.0.0.1 "TERM=xterm screen -x ${board}"' %}""")
@@ -123,11 +123,9 @@ template_makefile = string.Template("""
 all: builders servers\n
 builders:\n\tdocker-compose build ${builders}\n
 servers:\n\tdocker-compose build ${dockers}\n
-run:\n\t./udev_reload.sh && docker-compose up ${dockers}\n
-start:\n\t./udev_reload.sh && docker-compose up -d ${dockers}\n
-stop:\n\tdocker-compose stop ${dockers}\n
+start:\n\t./udev_reload.sh && docker-compose up -d ${dockers} && sudo /home/lava/ci-box/docker-udev-tools/udev-forward.sh\n
+stop:\n\tdocker-compose stop ${dockers} && sudo systemctl disable udev-forward.service\n
 status:\n\tdocker-compose ps\n
-restart:\n\tdocker-compose down\n\tdocker-compose up -d ${dockers}\n
 clean:\n\tdocker-compose down\n
 distclean:\n\tdocker-compose down\n\tdocker image rm ${containers}\n
 .PHONY: all run start stop status restart clean distclean
@@ -842,8 +840,17 @@ def parse_board(dockcomp, board, slaves):
                         power_on_command=power_on_command
                     )
     if "ums" in board:
-        by_id = board["ums"]["by-id"]
-        device_line += template_device_ums_generic.substitute(by_id=by_id)
+        # ACTION=="add", ENV{ID_SERIAL_SHORT}=="E00A1029", RUN+="/usr/local/bin/usb-passthrough -a -d %E{ID_SERIAL_SHORT} -i lava-dispatcher"
+        serial = board["ums"]["serial"]
+        idvendor = board["ums"]["idvendor"]
+        idproduct = board["ums"]["idproduct"]
+        serial_short = board["ums"]["serial_short"]
+        udev_line = "ACTION==\"add\", ENV{{ID_SERIAL_SHORT}}==\"{}\", RUN+=\"/home/lava/ci-box/docker-udev-tools/usb-passthrough -a -d %E{{ID_SERIAL_SHORT}} -i lava-worker\"\n".format(serial_short)
+        if not os.path.isdir("./udev"):
+            os.mkdir("./udev")
+        with open("./udev/99-lavaworker-udev.rules", "a") as fp:
+            fp.write(udev_line)
+        device_line += template_device_ums_generic.substitute(by_id=serial)
     use_kvm = board["kvm"] if "kvm" in board else False
     if use_kvm:
         dockcomp_add_device(dockcomp, slave_name, "/dev/kvm:/dev/kvm")
