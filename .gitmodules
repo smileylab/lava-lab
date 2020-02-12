@@ -25,3 +25,7 @@
 	path = ci-box-postgres
 	url = ssh://rdsw@10.88.88.8/volume1/internal_git/docker.git
 	branch = database
+[submodule "docker-udev-tools"]
+	path = docker-udev-tools
+	url = https://git.lavasoftware.org/lava/docker-udev-tools.git
+	branch = master
