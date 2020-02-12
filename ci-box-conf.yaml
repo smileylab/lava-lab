@@ -52,6 +52,7 @@ slaves:
     remote_rpc_port: 8080
     remote_user: admin
     dispatcher_ip: 10.88.88.12
+    bind_dev: "/dev"
     ports:
       - "8081:80"
       - "8022:22"
@@ -94,6 +95,8 @@ boards:
       hard_reset_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY4/value && echo 1 > /sys/class/edm/gpio/GPIO_RELAY4/value"
       power_on_command: ssh root@10.88.88.168 "echo 1 > /sys/class/edm/gpio/GPIO_RELAY4/value"
       power_off_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY4/value"
+    ums:
+      by-id: "/dev/disk/by-id/usb-Linux_UMS_disk_0_0000000000000000-0:0"
     uart:
       idvendor: 0x0403
       idproduct: 0x6001
