@@ -68,7 +68,7 @@ boards:
     # match to a specified slave (slave's name) from the slaves list
     slave: lava-worker
     pdu_generic:
-      hard_reset_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY2/value && echo 1 > /sys/class/edm/gpio/GPIO_RELAY2/value"
+      hard_reset_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY2/value && sleep 1 && echo 1 > /sys/class/edm/gpio/GPIO_RELAY2/value"
       power_on_command: ssh root@10.88.88.168 "echo 1 > /sys/class/edm/gpio/GPIO_RELAY2/value"
       power_off_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY2/value"
     uart:
@@ -80,7 +80,7 @@ boards:
     # match to a specified slave (slave's name) from the slaves list
     slave: lava-worker
     pdu_generic:
-      hard_reset_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY3/value && echo 1 > /sys/class/edm/gpio/GPIO_RELAY3/value"
+      hard_reset_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY3/value && sleep 1 && echo 1 > /sys/class/edm/gpio/GPIO_RELAY3/value"
       power_on_command: ssh root@10.88.88.168 "echo 1 > /sys/class/edm/gpio/GPIO_RELAY3/value"
       power_off_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY3/value"
     uart:
@@ -92,7 +92,7 @@ boards:
     # match to specified slave (slave's name) from the slaves list
     slave: lava-worker
     pdu_generic:
-      hard_reset_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY4/value && echo 1 > /sys/class/edm/gpio/GPIO_RELAY4/value"
+      hard_reset_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY4/value && sleep 1 && echo 1 > /sys/class/edm/gpio/GPIO_RELAY4/value"
       power_on_command: ssh root@10.88.88.168 "echo 1 > /sys/class/edm/gpio/GPIO_RELAY4/value"
       power_off_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY4/value"
     ums:
@@ -109,7 +109,7 @@ boards:
     # match to a specified slave (slave's name) from the slaves list
     slave: lava-worker
     pdu_generic:
-      hard_reset_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY1/value && echo 1 > /sys/class/edm/gpio/GPIO_RELAY1/value"
+      hard_reset_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY1/value && sleep 1 &&  echo 1 > /sys/class/edm/gpio/GPIO_RELAY1/value"
       power_on_command: ssh root@10.88.88.168 "echo 1 > /sys/class/edm/gpio/GPIO_RELAY1/value"
       power_off_command: ssh root@10.88.88.168 "echo 0 > /sys/class/edm/gpio/GPIO_RELAY1/value"
     uart:
