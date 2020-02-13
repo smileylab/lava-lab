@@ -8,7 +8,7 @@ postgres:
   ports:
     - "5432:5432"
   volumes:
-    - "./overlays/postgresql/data:/var/lib/postgresql/data"
+    - "/mnt/md0/postgresql/data:/var/lib/postgresql/data"
   environment:
     TZ: Asia/Taipei   # add timezone env
   shm_size: 256M
