@@ -27,6 +27,7 @@ clean_files() {
 	rm -rf ./ci-box-lava-worker/configs/lava-slave
 	rm -rf ./ci-box-lava-worker/configs/tftpd-hpa
 	rm -rf ./ci-box-lava-worker/configs/ser2net.conf
+	rm -rf ./docker-udev-tools/udev-forward.conf
 }
 
 if [ "$1" = "mrproper" ];then
