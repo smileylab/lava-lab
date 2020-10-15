@@ -29,6 +29,8 @@ masters:
       token: "4015bc9ee91e437d90df83fb64fbbe312d9c9f05"
       description: Account and Token for ZMQ
     http_fqdn: 10.88.88.12
+    allowed_hosts:
+      - "10.20.30.9"
     healthcheck_url: http://10.88.88.12:8085
     aliases: lava.server
     # persistent_db: True # this is to enable local postgresql on lava-server
