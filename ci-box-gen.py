@@ -736,7 +736,7 @@ def parse_slave(dockcomp, index, slave, masters):
         if not os.path.isdir("./udev"):
             os.mkdir("./udev")
         for udev_dev in slave["devices"]:
-            udev_line = 'SUBSYSTEM=="tty", ATTRS{idVendor}=="{:04X}", ATTRS{idProduct}=="{:04X}",'.format(udev_dev["idvendor"], udev_dev["idproduct"])
+            udev_line = 'SUBSYSTEM=="tty", ATTRS{idVendor}=="{:04x}", ATTRS{idProduct}=="{:04x}", '.format(udev_dev["idvendor"], udev_dev["idproduct"])
             if "serial" in udev_dev:
                 udev_line += 'ATTRS{serial}=="{}", '.format(udev_dev["serial"])
             if "devpath" in udev_dev:
@@ -872,7 +872,7 @@ def parse_board(dockcomp, board, slaves):
         if isinstance(idvendor, str):
             print("Please put hexadecimal IDs for vendor {} (like 0x{})".format(board_name, idvendor))
             sys.exit(1)
-        udev_line = "SUBSYSTEM==\"tty\", ATTRS{{idVendor}}==\"{:04X}\", ATTRS{{idProduct}}==\"{:04X}\",".format(idvendor, idproduct)
+        udev_line = "SUBSYSTEM==\"tty\", ATTRS{{idVendor}}==\"{:04x}\", ATTRS{{idProduct}}==\"{:04x}\", ".format(idvendor, idproduct)
         if "serial" in uart:
             udev_line += "ATTRS{{serial}}==\"{}\", ".format(board["uart"]["serial"])
         if "devpath" in uart:
