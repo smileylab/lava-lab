@@ -48,7 +48,7 @@ masters:
 slaves:
   - name: lava-worker
     version: 2019.09
-    extra_packages: "git task-spooler"
+    extra_packages: "git task-spooler openssh-server"
     remote_master: lava-server
     remote_address: 10.88.88.12
     remote_rpc_port: 8080
