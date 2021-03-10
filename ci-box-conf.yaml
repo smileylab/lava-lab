@@ -65,6 +65,19 @@ slaves:
       TZ: Asia/Taipei   # add timezone env
 
 boards:
+  - name: pico-imx8mm-pi
+    type: pico-imx8
+    # match to a specified slave (slave's name) from the slaves list
+    slave: lava-worker
+    pdu_generic:
+      hard_reset_command: tsp ssh lava@10.88.88.12 "pt2usb-util.sh 3-2.1.3 power 4 off && sleep 1 && pt2usb-util.sh 3-2.1.3 power 4 on"
+      power_on_command: tsp ssh lava@10.88.88.12 "pt2usb-util.sh 3-2.1.3 power 4 on"
+      power_off_command: tsp ssh lava@10.88.88.12 "pt2usb-util.sh 3-2.1.3 power 4 off"
+    uart:
+      idvendor: 0x10c4
+      idproduct: 0xea70
+      serial: 009C8601
+      interfacenum: "00"
   - name: pico-imx6-pi
     type: pico-imx6
     # match to a specified slave (slave's name) from the slaves list
