@@ -48,7 +48,7 @@ masters:
 slaves:
   - name: lava-worker
     version: 2019.09
-    extra_packages: "git task-spooler openssh-server"
+    extra_packages: "git iputils-ping task-spooler openssh-server"
     remote_master: lava-server
     remote_address: 10.88.88.12
     remote_rpc_port: 8080
@@ -167,6 +167,7 @@ builders:
   - name: yocto
     username: jenkins
     password: jenkins
+    groupid: 132 # `getent group docker | cut -d: -f3`
     toolchain: "gcc-5.1-2015.08-x86_64_arm-linux-gnueabihf \
     gcc-linaro-6.4.1-2017.11-x86_64_aarch64-linux-gnu"
     extra_pkgs: "gawk wget git-core git-lfs diffstat unzip texinfo gcc-multilib \

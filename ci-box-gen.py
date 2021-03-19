@@ -1060,6 +1060,8 @@ def parse_builder(dockcomp, builder):
         dockcomp["services"][name]["build"]["args"]["builder_username"] = builder["username"]
     if "password" in builder:
         dockcomp["services"][name]["build"]["args"]["builder_password"] = builder["password"]
+    if "groupid" in builder:
+        dockcomp["services"][name]["build"]["args"]["DOCKER_GROUP_ID"] = builder["groupid"]
     if "toolchain" in builder:
         dockcomp["services"][name]["build"]["args"]["toolchain"] = builder["toolchain"]
     if "extra_pkgs" in builder:
