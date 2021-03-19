@@ -1,30 +1,31 @@
 [submodule "ci-box-lava-worker"]
 	path = ci-box-lava-worker
-	url = ssh://rdsw@10.88.88.8/volume1/internal_git/lavalab/ci-box-lava-worker.git
-	branch = lava-docker
+	url = https://github.com/smileylab/ci-box-lava-worker.git
+	branch = lava-worker
 [submodule "ci-box-lava-master"]
 	path = ci-box-lava-master
-	url = ssh://rdsw@10.88.88.8/volume1/internal_git/lavalab/ci-box-lava-master.git
-	branch = lava-docker
+	url = https://github.com/smileylab/ci-box-lava-master.git
+	branch = lava-master
 [submodule "ci-box-fileserver"]
 	path = ci-box-fileserver
-	url = ssh://rdsw@10.88.88.8/volume1/internal_git/lavalab/ci-box-fileserver.git
+	url = https://github.com/smileylab/ci-box-fileserver.git
 	branch = healthcheck
 [submodule "ci-box-squad"]
 	path = ci-box-squad
-	url = ssh://rdsw@10.88.88.8/volume1/internal_git/lavalab/ci-box-squad.git
+	url = https://github.com/smileylab/ci-box-squad.git
 	branch = tn-squad
 [submodule "ci-box-jenkins"]
 	path = ci-box-jenkins
-	url = ssh://rdsw@10.88.88.8/volume1/internal_git/lavalab/ci-box-jenkins.git
+	url = https://github.com/smileylab/ci-box-jenkins.git
+	branch = lavalab-jenkins
 [submodule "ci-box-builders"]
 	path = ci-box-builders
-	url = ssh://rdsw@10.88.88.8/volume1/internal_git/docker.git
-	branch = builder
+	url = https://github.com/smileylab/ci-box-builders.git
+	branch = main
 [submodule "ci-box-postgres"]
 	path = ci-box-postgres
-	url = ssh://rdsw@10.88.88.8/volume1/internal_git/docker.git
-	branch = database
+	url = https://github.com/smileylab/ci-box-postgres.git
+	branch = main
 [submodule "docker-udev-tools"]
 	path = docker-udev-tools
 	url = https://git.lavasoftware.org/lava/docker-udev-tools.git
