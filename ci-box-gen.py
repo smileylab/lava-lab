@@ -662,7 +662,7 @@ def parse_slave(dockcomp, index, slave, masters):
                     zmq_auth_genlist.write("{}/{} {}/{}\n".format(host, name, fm["host"], fm["name"]))
                     need_zmq_auth_gen = True
 
-    if remote_token is "BAD":
+    if remote_token == "BAD":
         print("Cannot find {} on {}".format(remote_user, remote_master))
         sys.exit(1)
 
