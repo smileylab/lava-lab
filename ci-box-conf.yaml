@@ -141,10 +141,10 @@ jenkins:
   authentication-tokens bouncycastle-api branch-api build-timeout \
   cloudbees-folder cloud-stats command-launcher copyartifact credentials credentials-binding \
   display-url-api docker-commons docker-workflow durable-task \
-  email-ext external-monitor-job ftppublisher \
+  email-ext external-monitor-job \
   git git-changelog git-client git-parameter github github-api github-branch-source git-server \
-  gradle handlebars icon-shim jackson2-api javadoc jdk-tool jquery-detached jsch junit ldap locale \
-  mailer mapdb-api matrix-auth matrix-project momentjs multiple-scms pam-auth \
+  gradle handlebars jackson2-api javadoc jdk-tool jquery-detached jsch junit ldap locale \
+  mailer mapdb-api matrix-auth matrix-project momentjs pam-auth \
   pipeline-build-step pipeline-github-lib pipeline-graph-analysis pipeline-input-step \
   pipeline-milestone-step pipeline-model-api pipeline-model-declarative-agent pipeline-model-definition \
   pipeline-model-extensions pipeline-rest-api pipeline-stage-step pipeline-stage-tags-metadata pipeline-stage-view \
