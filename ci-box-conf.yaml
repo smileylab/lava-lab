@@ -138,7 +138,7 @@ jenkins:
   agent_port: 8084
   extra_packages: "repo gettext"
   plugins: "ace-editor ant antisamy-markup-formatter apache-httpcomponents-client-4-api \
-  authentication-tokens bouncycastle-api branch-api build-timeout \
+  authentication-tokens authorize-project bouncycastle-api branch-api build-timeout \
   cloudbees-folder cloud-stats command-launcher copyartifact credentials credentials-binding \
   display-url-api docker-commons docker-workflow durable-task \
   email-ext external-monitor-job \
