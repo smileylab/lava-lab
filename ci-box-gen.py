@@ -7,6 +7,7 @@ import yaml
 import string
 import socket
 import shutil
+import socket
 
 # Defaults
 configs_yaml = "ci-box-conf.yaml"
@@ -17,6 +18,7 @@ ser2net_ports = {}
 allowed_hosts_list = [ '"127.0.0.1","localhost"' ]
 default_master = "lava-server"
 default_slave = "lava-worker"
+domain_short = "ci"
 zmq_auth_genlist = None
 configs = None
 
@@ -123,7 +125,7 @@ template_makefile = string.Template("""
 all: builders servers\n
 builders:\n\tdocker-compose build ${builders}\n
 servers:\n\tdocker-compose build ${dockers}\n
-start:\n\t./udev_reload.sh && docker-compose up -d ${dockers} && sudo /home/lava/ci-box/docker-udev-tools/udev-forward.sh\n
+start:\n\t./udev_reload.sh && docker-compose up -d ${dockers} && sudo ${curdir}/docker-udev-tools/udev-forward.sh\n
 stop:\n\tdocker-compose stop ${dockers} && sudo systemctl disable udev-forward.service\n
 status:\n\tdocker-compose ps\n
 clean:\n\tdocker-compose down\n
@@ -180,6 +182,28 @@ def usage():
 #
 # parsing functions
 #
+def parse_domain(dockcomp, master):
+    """
+    Parse Domain name for image prefix in LAVA Server Configurations from ci-box-conf.yaml
+    """
+    global domain_short
+    if not 'http_fqdn' in master.keys():
+        print("WARNING: http_fqdn not defined")
+
+    # set global domain_short if http_fqdn is not in ip format
+    try:
+        socket.inet_aton(master["http_fqdn"])
+        short = domain_short
+    except socket.error:
+        pts = master["http_fqdn"].lower().split('.')
+        if len(pts) == 2 and pts[0] != 'www':
+            short = pts[0]
+        else:
+            short = pts[1]
+    domain_short = short
+
+
+
 def parse_database(dockcomp, database):
     """
     Parse Postgresql Database Configurations from ci-box-conf.yaml
@@ -197,7 +221,7 @@ def parse_database(dockcomp, database):
     dockcomp["services"][name] = {}
     dockcomp["services"][name]["container_name"] = name
     dockcomp["services"][name]["hostname"] = name
-    dockcomp["services"][name]["image"] = "tn/{}".format(name)
+    dockcomp["services"][name]["image"] = "{}/{}".format(domain_short, name)
     # extends:
     #      file: ./ci-box-postgres/docker-postgres/docker-compose.yml
     #      service: postgres
@@ -241,6 +265,7 @@ def parse_master(dockcomp, index, master):
                         "http_fqdn", "slave_keys", "slaveenv", "loglevel", "allowed_hosts",
                         "lava-coordinator", "smtp", "aliases", "ports", "volumes", "environment",
                         "extra_packages", "healthcheck_url" ]
+
     for keyword in master:
         if not keyword in keywords_master:
             print("WARNING: unknown keyword {}".format(keyword))
@@ -259,7 +284,7 @@ def parse_master(dockcomp, index, master):
     dockcomp["services"][name] = {}
     dockcomp["services"][name]["container_name"] = name
     dockcomp["services"][name]["hostname"] = name
-    dockcomp["services"][name]["image"] = "tn/{}".format(name)
+    dockcomp["services"][name]["image"] = "{}/{}".format(domain_short, name)
     # extends:
     #      file: ./ci-box-lava-master/docker-compose.yml
     #      service: lava-server
@@ -343,6 +368,7 @@ def parse_master(dockcomp, index, master):
         allowed_hosts_list.append('"{}"'.format(lava_http_fqdn))
     else:
         lava_http_fqdn = "127.0.0.1"
+
     allowed_hosts_list.append('"{}"'.format(name))
     if "allowed_hosts" in master:
         for allow_host in master["allowed_hosts"]:
@@ -566,7 +592,7 @@ def parse_slave(dockcomp, index, slave, masters):
     dockcomp["services"][name] = {}
     dockcomp["services"][name]["container_name"] = name
     dockcomp["services"][name]["hostname"] = name
-    dockcomp["services"][name]["image"] = "tn/{}".format(name)
+    dockcomp["services"][name]["image"] = "{}/{}".format(domain_short, name)
     # extends:
     #      file: ./ci-box-lava-slave/docker-compose.yml
     #      service: lava-slave
@@ -991,7 +1017,7 @@ def parse_jenkins(dockcomp, jenkins):
     """
     workdir = "./ci-box-jenkins"
     keywords_jenkins = [ "version", "username", "password", "http_port",
-    "agent_port", "extra_packages", "plugins", "ports", "volumes", "environment" ]
+    "agent_port", "extra_packages", "plugins", "ports", "volumes", "environment", "docker_group_id" ]
 
     for keyword in jenkins:
         if not keyword in keywords_jenkins:
@@ -1002,7 +1028,7 @@ def parse_jenkins(dockcomp, jenkins):
     dockcomp["services"][name] = {}
     dockcomp["services"][name]["container_name"] = name
     dockcomp["services"][name]["hostname"] = name
-    dockcomp["services"][name]["image"] = "tn/{}".format(name)
+    dockcomp["services"][name]["image"] = "{}/{}".format(domain_short, name)
     # extends:
     #      file: ./ci-box-jenkins/docker-compose.yml
     #      service: jenkins
@@ -1018,6 +1044,9 @@ def parse_jenkins(dockcomp, jenkins):
     dockcomp["services"][name]["build"]["args"]["agent_port"] = jenkins["agent_port"]
     dockcomp["services"][name]["build"]["args"]["extra_packages"] = jenkins["extra_packages"]
     dockcomp["services"][name]["build"]["args"]["plugins"] = jenkins["plugins"]
+    if "docker_group_id" in jenkins:
+        dockcomp["services"][name]["build"]["args"]["docker_group_id"] = jenkins["docker_group_id"]
+
     # docker-compose's usual ports, volumes and environment overrides
     if isinstance(jenkins["ports"], list) and len(jenkins["ports"]) > 0:
         dockcomp["services"][name]["ports"] = jenkins["ports"]
@@ -1033,8 +1062,8 @@ def parse_builder(dockcomp, builder):
     Parse Builders Configurations for jenkins from ci-box-conf.yaml
     """
     workdir = "./ci-box-builders/builder"
-    keywords_builder = [ "name", "username", "password", "toolchain", "extra_pkgs",
-    "sshd_port", "ports", "volumes", "environment" ]
+    keywords_builder = [ "name", "ubuntu_version", "domain_name", "username", "password", "toolchain", "extra_pkgs",
+    "sshd_port", "ports", "volumes", "environment", "docker_version", "docker_group_id" ]
 
     for keyword in builder:
         if not keyword in keywords_builder:
@@ -1045,7 +1074,7 @@ def parse_builder(dockcomp, builder):
     dockcomp["services"][name] = {}
     dockcomp["services"][name]["container_name"] = name
     dockcomp["services"][name]["hostname"] = name
-    dockcomp["services"][name]["image"] = "tn/{}".format(name)
+    dockcomp["services"][name]["image"] = "{}/{}".format(domain_short, name)
     # extends:
     #      file: ./ci-box-builders/builder/docker-compose.yml
     #      service: builder
@@ -1056,12 +1085,18 @@ def parse_builder(dockcomp, builder):
     dockcomp["services"][name]["build"] = {}
     dockcomp["services"][name]["build"]["context"] = workdir
     dockcomp["services"][name]["build"]["args"] = {}
+    if "ubuntu_version" in builder:
+        dockcomp["services"][name]["build"]["args"]["ubuntu_version"] = builder["ubuntu_version"]
     if "username" in builder:
         dockcomp["services"][name]["build"]["args"]["builder_username"] = builder["username"]
     if "password" in builder:
         dockcomp["services"][name]["build"]["args"]["builder_password"] = builder["password"]
-    if "groupid" in builder:
-        dockcomp["services"][name]["build"]["args"]["DOCKER_GROUP_ID"] = builder["groupid"]
+    if "domain_name" in builder:
+        dockcomp["services"][name]["build"]["args"]["domain_name"] = builder["domain_name"]
+    if "docker_version" in builder:
+        dockcomp["services"][name]["build"]["args"]["docker_version"] = builder["docker_version"]
+    if "docker_group_id" in builder:
+        dockcomp["services"][name]["build"]["args"]["docker_group_id"] = builder["docker_group_id"]
     if "toolchain" in builder:
         dockcomp["services"][name]["build"]["args"]["toolchain"] = builder["toolchain"]
     if "extra_pkgs" in builder:
@@ -1090,7 +1125,7 @@ def parse_squad(dockcomp, squad):
     dockcomp["services"][name] = {}
     dockcomp["services"][name]["container_name"] = name
     dockcomp["services"][name]["hostname"] = name
-    dockcomp["services"][name]["image"] = "tn/{}".format(name)
+    dockcomp["services"][name]["image"] = "{}/{}".format(domain_short, name)
     # extends:
     #      file: ./ci-box-lava-squad/docker-compose.yml
     #      service: squad
@@ -1145,7 +1180,7 @@ def parse_healthcheck(dockcomp, health):
     dockcomp["services"][name] = {}
     dockcomp["services"][name]["container_name"] = name
     dockcomp["services"][name]["hostname"] = name
-    dockcomp["services"][name]["image"] = "tn/{}".format(name)
+    dockcomp["services"][name]["image"] = "{}/{}".format(domain_short, name)
     #extends:
     #    file: ./ci-box-fileserver/docker-compose.yml
     #    service: fileserver
@@ -1189,6 +1224,10 @@ def main():
     dockcomp = {}
     dockcomp["version"] = "2.0"
     dockcomp["services"] = {}
+
+    # parse domain from masters
+    masters = {} if "masters" not in configs else configs["masters"]
+    parse_domain(dockcomp, masters[0])
 
     # parse external postgresql database server setting from the ci-box-conf.yaml
     if "postgres" in configs:
@@ -1266,7 +1305,7 @@ def main():
     builders = list(name for name in containers if "builder" in name)
     servers = list(name for name in containers if "builder" not in name)
     with open("./Makefile", 'w') as f:
-        f.write(template_makefile.substitute(containers=" ".join(["tn/{}".format(d) for d in containers]), dockers=" ".join(servers), builders=" ".join(builders)))
+        f.write(template_makefile.substitute(containers=" ".join(["{}/{}".format(domain_short, d) for d in containers]), curdir=os.path.abspath(os.getcwd()), dockers=" ".join(servers), builders=" ".join(builders)))
 
 
 
