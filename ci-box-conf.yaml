@@ -189,6 +189,14 @@ builders:
     extra_pkgs: "gawk wget git-core diffstat unzip texinfo gcc-multilib \
      build-essential chrpath socat cpio python python3 python3-pip python3-pexpect \
      xz-utils debianutils iputils-ping libsdl1.2-dev xterm file sudo vim git-lfs"
+  - name: nvidia
+    ubuntu_version: 18.04
+    username: jenkins
+    password: jenkins
+    toolchain: ""
+    extra_pkgs: "kpartx zip wget git git-lfs sshpass libreoffice-writer u-boot-tools \
+    dosfstools device-tree-compiler cpio expect zutils g++-8 gcc-8 python python3 python3-dev \
+    chrpath cpp diffstat file gawk make patch sudo"
   - name: ubuntu
     username: jenkins
     password: jenkins
