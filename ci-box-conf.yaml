@@ -213,10 +213,12 @@ builders:
     git-lfs gperf bison g++-multilib"
     sshd_port: 22
   - name: ubuntu
+    ubuntu_version: 20.04
     username: jenkins
     password: jenkins
     extra_pkgs: "kpartx zip wget git sshpass libreoffice-writer u-boot-tools \
-    dosfstools device-tree-compiler cpio expect zutils"
+    dosfstools device-tree-compiler cpio expect zutils \
+    libusb-1.0-0-dev libzip-dev libbz2-dev pkg-config cmake libssl-dev g++"
   - name: android
     username: jenkins
     password: jenkins
