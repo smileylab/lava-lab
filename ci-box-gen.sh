@@ -8,6 +8,8 @@ clean_files() {
 	rm -rf Makefile
 	rm -rf deploy.sh
 	rm -rf udev_reload.sh
+	rm -rf udev-forward.sh
+	rm -rf udev-forward.service
 	rm -rf docker-compose.yml
 	rm -rf ./udev
 	rm -rf ./ci-box-lava-master/configs/lava_http_fqdn

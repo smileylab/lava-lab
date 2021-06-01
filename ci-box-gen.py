@@ -46,6 +46,37 @@ $$BEROOT udevadm control --reload-rules || exit $$?
 $$BEROOT udevadm trigger || exit $$?
 """)
 
+# Lava udev usb forward service template for lava-worker
+template_udev_forward_service = string.Template("""
+# A systemd service to replicate the following command
+# sudo contrib/udev-forward.py -i lava-dispatcher &
+
+[Unit]
+Description=USB device passthrough for docker containers
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=python3 ${curdir}/docker-udev-tools/udev-forward.py -i ${dispatcher}
+
+[Install]
+WantedBy=multi-user.target
+""")
+
+# Lava udev usb forward sh template to start/stop usb forward service
+template_udev_forward_sh = string.Template("""
+#!/bin/sh
+
+#check for root
+BEROOT=""
+if [ $$(id -u) -ne 0 ];then
+    BEROOT=${beroot}
+fi
+$$BEROOT systemctl disable udev-forward.service && echo "Disabled udev-forward.service" || echo "No udev-forward.service"
+$$BEROOT systemctl enable ${curdir}/udev-forward.service && echo "Enabled udev-forward.service" || exit 1
+$$BEROOT systemctl start udev-forward.service
+""")
+
 # Lava device jinja2 templates
 template_device = string.Template("""{% extends '${devicetype}.jinja2' %}""")
 template_device_conmux = string.Template("""{% set connection_command = 'conmux-console ${board}' %}""")
@@ -125,7 +156,7 @@ template_makefile = string.Template("""
 all: builders servers\n
 builders:\n\tdocker-compose build ${builders}\n
 servers:\n\tdocker-compose build ${dockers}\n
-start:\n\t./udev_reload.sh && docker-compose up -d ${dockers} && sudo ${curdir}/docker-udev-tools/udev-forward.sh\n
+start:\n\t./udev_reload.sh && docker-compose up -d ${dockers} && sudo ${curdir}/udev-forward.sh\n
 stop:\n\tdocker-compose stop ${dockers} && sudo systemctl disable udev-forward.service\n
 status:\n\tdocker-compose ps\n
 clean:\n\tdocker-compose down\n
@@ -871,12 +902,21 @@ def parse_board(dockcomp, board, slaves):
         idvendor = board["ums"]["idvendor"]
         idproduct = board["ums"]["idproduct"]
         serial_short = board["ums"]["serial_short"]
-        udev_line = "ACTION==\"add\", ENV{{ID_SERIAL_SHORT}}==\"{}\", RUN+=\"/home/lava/ci-box/docker-udev-tools/usb-passthrough -a -d %E{{ID_SERIAL_SHORT}} -i lava-worker\"\n".format(serial_short)
+        udev_line = "ACTION==\"add\", ENV{{ID_SERIAL_SHORT}}==\"{}\", RUN+=\"{}/docker-udev-tools/usb-passthrough -a -d %E{{ID_SERIAL_SHORT}} -i {}\"\n".format(serial_short, os.path.abspath(os.getcwd()), default_slave)
         if not os.path.isdir("./udev"):
             os.mkdir("./udev")
-        with open("./udev/99-lavaworker-udev.rules", "a") as fp:
+        with open("./udev/99-lavaworker-udev.rules", 'a') as fp:
             fp.write(udev_line)
         device_line += template_device_ums_generic.substitute(by_id=serial)
+        # sudo contrib/udev-forward.py -i lava-dispatcher &
+        service_line = template_udev_forward_service.substitute(curdir=os.path.abspath(os.getcwd()), dispatcher=default_slave)
+        with open("./udev-forward.service", 'w') as fp:
+            fp.write(service_line)
+        # dump the udev-forward.sh script
+        with open("./udev-forward.sh", 'w') as fp:
+            fp.write(template_udev_forward_sh.substitute(curdir=os.path.abspath(os.getcwd()), beroot="sudo"))
+        os.chmod("./udev-forward.sh", 0o755)
+
     use_kvm = board["kvm"] if "kvm" in board else False
     if use_kvm:
         dockcomp_add_device(dockcomp, slave_name, "/dev/kvm:/dev/kvm")
@@ -899,8 +939,8 @@ def parse_board(dockcomp, board, slaves):
             print("Please put hexadecimal IDs for vendor {} (like 0x{})".format(board_name, idvendor))
             sys.exit(1)
         udev_line = "SUBSYSTEM==\"tty\", ATTRS{{idVendor}}==\"{:04x}\", ATTRS{{idProduct}}==\"{:04x}\", ".format(idvendor, idproduct)
-        if "serial" in uart:
-            udev_line += "ATTRS{{serial}}==\"{}\", ".format(board["uart"]["serial"])
+        if "idserial" in uart:
+            udev_line += "ENV{{ID_SERIAL}}==\"{}\", ".format(board["uart"]["idserial"])
         if "devpath" in uart:
             udev_line += "ATTRS{{devpath}}==\"{}\", ".format(board["uart"]["devpath"])
         if "interfacenum" in uart:
