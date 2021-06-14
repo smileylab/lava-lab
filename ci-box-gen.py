@@ -605,7 +605,7 @@ def parse_slave(dockcomp, index, slave, masters):
     """
     workdir = "./ci-box-lava-worker/configs"
     keywords_slaves = [ "name", "version", "zmq_auth_key", "zmq_auth_key_secret", "zmq_auth_master_key",
-    "dispatcher_ip", "remote_master", "remote_address", "remote_rpc_port", "remote_user",
+    "dispatcher_ip", "pdu_server", "remote_master", "remote_address", "remote_rpc_port", "remote_user",
     "remote_user_token", "remote_proto", "default_slave", "bind_dev",
     "use_tftp", "use_nbd", "use_overlay_server", "use_nfs", "use_tap",
     "arch", "lava-coordinator", "expose_ser2net", "expose_ports",
@@ -637,6 +637,8 @@ def parse_slave(dockcomp, index, slave, masters):
     dockcomp["services"][name]["build"]["args"]["version"] = slave["version"]
     if "extra_packages" in slave:
         dockcomp["services"][name]["build"]["args"]["extra_packages"] = slave["extra_packages"]
+    if "pdu_server" in slave:
+        dockcomp["services"][name]["build"]["args"]["pdu_server"] = slave["pdu_server"]
     dockcomp["services"][name]["dns_search"] = ""
     dockcomp["services"][name]["restart"] = "always"
     if "ports" in slave and isinstance(slave["ports"], list) and len(slave["ports"]) > 0:
