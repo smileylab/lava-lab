@@ -87,7 +87,7 @@ template_device_pdu_generic = string.Template("""
 {% set power_on_command = '${power_on_command}' %}
 """)
 template_device_ums_generic = string.Template("""
-{% set uboot_mass_storage_device = '/dev/disk/by-id/${by_id}' %}
+{% set uboot_mass_storage_device = '/dev/disk/by-id/usb-${by_id}' %}
 """)
 template_device_ser2net = string.Template("""{% set connection_command = 'telnet 127.0.0.1 ${port}' %}""")
 template_device_screen = string.Template("""{% set connection_command = 'ssh -o StrictHostKeyChecking=no -t root@127.0.0.1 "TERM=xterm screen -x ${board}"' %}""")
