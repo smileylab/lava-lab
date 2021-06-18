@@ -1207,9 +1207,9 @@ def parse_squad(dockcomp, squad):
 
 def parse_healthcheck(dockcomp, health):
     """
-    Parse Builders Configurations for jenkins from ci-box-conf.yaml
+    Parse Healthcheck fileserver Configurations from ci-box-conf.yaml
     """
-    workdir = "./ci-box-fileserver"
+    workdir = "./lava-healthchecks-binary"
     keywords_healthcheck = [ "http_port", "ftp_port", "root_path", "extra_packages",
     "ports", "volumes", "environment" ]
     for keyword in health:
@@ -1224,11 +1224,11 @@ def parse_healthcheck(dockcomp, health):
     dockcomp["services"][name]["hostname"] = name
     dockcomp["services"][name]["image"] = "{}/{}".format(domain_short, name)
     #extends:
-    #    file: ./ci-box-fileserver/docker-compose.yml
+    #    file: ./lava-healthchecks-binary/docker-compose.yml
     #    service: fileserver
     dockcomp["services"][name]["extends"] = {}
     dockcomp["services"][name]["extends"]["file"] = "{}/docker-compose.yml".format(workdir)
-    dockcomp["services"][name]["extends"]["service"] = "fileserver"
+    dockcomp["services"][name]["extends"]["service"] = "healthcheck"
     dockcomp["services"][name]["build"] = {}
     dockcomp["services"][name]["build"]["context"] = workdir
     dockcomp["services"][name]["build"]["args"] = {}
